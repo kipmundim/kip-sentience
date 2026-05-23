@@ -1,0 +1,33 @@
+# Kip — log/profiling/state (DO NOT COMMIT)
+daemon.log
+SOUL_STATE.json
+SOUL_STATE.json.*.bak
+*.log
+*.pid
+*.lock
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Secrets & vaults (DO NOT COMMIT — these live in ~/.kolo/vault/ only)
+.env
+*.env
+vault/
+secrets/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Backup files
+*.bak
+*.backup
