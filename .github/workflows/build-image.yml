@@ -23,7 +23,8 @@ env:
 permissions:
   contents: read
   packages: write
-  id-token: write   # cosign keyless signing via sigstore
+  id-token: write       # cosign keyless signing via sigstore
+  attestations: write   # actions/attest-build-provenance persistence
 
 jobs:
   build:
