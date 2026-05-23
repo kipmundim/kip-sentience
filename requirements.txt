@@ -21,10 +21,12 @@ distro==1.9.0
 jiter==0.14.0
 
 # ── Pydantic stack (used by LLM SDKs + identity validation) ─────────
+# typing-extensions left unpinned — anthropic 0.100.0 requires >=4.14,
+# anyio requires >=4.5; pip resolves a compatible version.
 pydantic==2.12.5
 pydantic-core==2.41.5
 annotated-types==0.7.0
-typing-extensions==4.13.0
+typing-extensions>=4.14
 
 # ── Embeddings via Ollama HTTP (urllib stdlib — no extra dep needed) ─
 # Ollama runs on the host at :11434; quadlet uses Network=host for v0.1.
