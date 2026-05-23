@@ -76,9 +76,13 @@ jobs:
 
       - name: Smoke test
         run: |
-          # Image PATH already puts /opt/kip-venv/bin first; use that explicitly
-          # since the base image has no /usr/bin/python3 (python is at /usr/local/bin/).
-          podman run --rm --entrypoint /opt/kip-venv/bin/python3 \
+          # Daemon writes state to $HOME at import time (v2_engine init).
+          # In production HOME=/workspace is the persistent volume; here
+          # we mount tmpfs so the import-time mkdir succeeds without
+          # leaving state behind.
+          podman run --rm \
+            --tmpfs /workspace:rw,size=64m,uid=1000,gid=1000 \
+            --entrypoint /opt/kip-venv/bin/python3 \
             ${{ steps.build.outputs.image-with-tag }} \
             -c "import sys; sys.path.insert(0, '/app'); \
                 from daemon import main; \

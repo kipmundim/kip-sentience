@@ -63,6 +63,7 @@ LABEL org.opencontainers.image.title="kip-sentience" \
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/kip-venv/bin:${PATH}" \
+    HOME="/workspace" \
     KIP_HOME="/app" \
     KIP_WORKSPACE="/workspace" \
     MEMORY_AGENT_ID="kip" \
