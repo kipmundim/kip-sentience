@@ -1,0 +1,110 @@
+name: build-kip-sentience
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Containerfile'
+      - 'requirements.txt'
+      - 'daemon.py'
+      - 'modes/**'
+      - 'io_surfaces/**'
+      - '*.py'
+      - '.github/workflows/build-image.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: kip-sentience
+  REGISTRY: ghcr.io/koda-tokyo
+  KIP_VERSION: '1.0.0'
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write   # cosign keyless signing via sigstore
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up metadata
+        id: meta
+        run: |
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          BUILD_DATE="$(date -u +%FT%TZ)"
+          TAG="v${KIP_VERSION}-${SHORT_SHA}"
+          FULL="${REGISTRY}/${IMAGE_NAME}:${TAG}"
+          echo "tag=$TAG"               >> "$GITHUB_OUTPUT"
+          echo "full=$FULL"             >> "$GITHUB_OUTPUT"
+          echo "build_date=$BUILD_DATE" >> "$GITHUB_OUTPUT"
+          echo "git_sha=$SHORT_SHA"     >> "$GITHUB_OUTPUT"
+
+      - name: Install podman + cosign
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: github
+        continue-on-error: true
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Log in to ghcr.io
+        if: github.event_name != 'pull_request'
+        uses: redhat-actions/podman-login@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image
+        id: build
+        uses: redhat-actions/buildah-build@v2
+        with:
+          containerfiles: ./Containerfile
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ steps.meta.outputs.tag }} latest v${{ env.KIP_VERSION }}
+          build-args: |
+            KIP_VERSION=v${{ env.KIP_VERSION }}
+            BUILD_DATE=${{ steps.meta.outputs.build_date }}
+            GIT_SHA=${{ steps.meta.outputs.git_sha }}
+          oci: true
+
+      - name: Smoke test
+        run: |
+          podman run --rm --entrypoint /usr/bin/python3 \
+            ${{ steps.build.outputs.image-with-tag }} \
+            -c "import sys; sys.path.insert(0, '/app'); \
+                from daemon import main; \
+                from soul_state import SoulState; \
+                from identity import IdentityCore; \
+                print('kip imports OK; ready to tick')"
+
+      - name: Push to ghcr.io
+        if: github.event_name != 'pull_request'
+        id: push
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ steps.meta.outputs.tag }} latest v${{ env.KIP_VERSION }}
+          registry: ${{ env.REGISTRY }}
+
+      - name: Sign image (cosign keyless)
+        if: github.event_name != 'pull_request'
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          cosign sign --yes \
+            "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${DIGEST}"
+
+      - name: Attest provenance
+        if: github.event_name != 'pull_request'
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

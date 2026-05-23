@@ -1,0 +1,50 @@
+# Build context exclusions for kip-sentience OCI image.
+# Keeps the build context small and avoids leaking host-side artefacts.
+
+# ── Version control ────────────────────────────────────────────────
+.git
+.gitignore
+.github
+
+# ── Host-side venv (image builds its own from requirements.txt) ────
+venv
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# ── Runtime state (regenerated in container at /workspace) ──────────
+daemon.log
+*.log
+*.bak.*
+SOUL_STATE.json.bak.*
+inbox
+
+# ── Admin / dev-only ────────────────────────────────────────────────
+scripts
+schema
+memory-system/migrations
+memory-system/backfill_diary.py
+memory-system/test_kip_unification.py
+
+# ── OS / IDE ────────────────────────────────────────────────────────
+.DS_Store
+.vscode
+.idea
+*.swp
+*.swo
+
+# ── Secrets — should never be in the repo, but defense in depth ────
+*.env
+.env*
+*.key
+*.pem
+secrets.env
+
+# ── Build artefacts ─────────────────────────────────────────────────
+*.tar
+*.tar.gz
+build/
+dist/
+*.egg-info

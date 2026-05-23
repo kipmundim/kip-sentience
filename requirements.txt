@@ -1,0 +1,41 @@
+# Kip Sentience Daemon — runtime python dependencies
+# Pinned for reproducible OCI image builds.
+# Source of truth: ~/kip-sentience/requirements.txt
+# DO NOT auto-regenerate from `pip freeze` of the dev venv — that pulls
+# CUDA toolkit and other host-build artefacts we do not want in the image.
+
+# ── HTTP / async ────────────────────────────────────────────────────
+httpx==0.28.1
+h11==0.16.0
+h2==4.3.0
+anyio==4.13.0
+sniffio==1.3.1
+certifi==2026.4.22
+idna==3.13
+charset-normalizer==3.4.7
+
+# ── LLM clients (DeepSeek via OpenAI-compatible + Anthropic fallback) ─
+anthropic==0.100.0
+openai==1.60.0
+distro==1.9.0
+jiter==0.14.0
+
+# ── Pydantic stack (used by LLM SDKs + identity validation) ─────────
+pydantic==2.12.5
+pydantic-core==2.41.5
+annotated-types==0.7.0
+typing-extensions==4.13.0
+
+# ── Embeddings via Ollama HTTP (urllib stdlib — no extra dep needed) ─
+# Ollama runs on the host at :11434; quadlet uses Network=host for v0.1.
+# Future v0.2: switch to a koda-ollama.koda mesh service.
+
+# ── Storage / serialization ─────────────────────────────────────────
+orjson==3.11.4
+
+# ── Observability ───────────────────────────────────────────────────
+structlog==25.2.0
+
+# ── Util ────────────────────────────────────────────────────────────
+click==8.4.1
+python-dotenv==1.1.2
