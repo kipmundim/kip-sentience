@@ -96,10 +96,8 @@ COPY --chown=kip:kip modes/        ./modes/
 COPY --chown=kip:kip io_surfaces/  ./io_surfaces/
 COPY --chown=kip:kip memory-system/memory_client.py ./memory-system/memory_client.py
 
-# Initial SOUL_STATE is read by daemon on first boot; runtime mutates a workspace copy
-COPY --chown=kip:kip SOUL_STATE.json ./SOUL_STATE.json.initial
-
 # Pre-create writable runtime dirs under /workspace (mounted as a volume in production)
+# Soul state initializes fresh in /workspace/ on first boot — never baked into image.
 RUN install -d -o kip -g kip -m 0750 /workspace /workspace/memory /workspace/inbox /run/koda
 
 USER kip:kip
