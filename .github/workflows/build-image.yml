@@ -76,7 +76,9 @@ jobs:
 
       - name: Smoke test
         run: |
-          podman run --rm --entrypoint /usr/bin/python3 \
+          # Image PATH already puts /opt/kip-venv/bin first; use that explicitly
+          # since the base image has no /usr/bin/python3 (python is at /usr/local/bin/).
+          podman run --rm --entrypoint /opt/kip-venv/bin/python3 \
             ${{ steps.build.outputs.image-with-tag }} \
             -c "import sys; sys.path.insert(0, '/app'); \
                 from daemon import main; \
