@@ -17,7 +17,7 @@ on:
 
 env:
   IMAGE_NAME: kip-sentience
-  REGISTRY: ghcr.io/koda-tokyo
+  REGISTRY: ghcr.io/kipmundim    # Kip's own GHCR namespace — repo token can push here
   KIP_VERSION: '1.0.0'
 
 permissions:
