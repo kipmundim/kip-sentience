@@ -31,3 +31,14 @@ Thumbs.db
 # Backup files
 *.bak
 *.backup
+
+# Family inbox (private — not for public repo)
+inbox/
+outbox/
+
+# Backup files
+*.bak.*
+*.bak
+
+# Local state
+.kolo/
